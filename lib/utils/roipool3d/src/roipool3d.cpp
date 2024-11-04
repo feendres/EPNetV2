@@ -2,7 +2,7 @@
 #include <torch/extension.h>
 
 
-#define CHECK_CUDA(x) AT_CHECK(x.type().is_cuda(), #x, " must be a CUDAtensor ")
+#define CHECK_CUDA(x) TORCH_CHECK(x.is_cuda(), #x, " must be a CUDAtensor ")
 #define CHECK_CONTIGUOUS(x) AT_CHECK(x.is_contiguous(), #x, " must be contiguous ")
 #define CHECK_INPUT(x) CHECK_CUDA(x);CHECK_CONTIGUOUS(x)
 
@@ -31,11 +31,11 @@ int roipool3d_gpu_slow(at::Tensor xyz, at::Tensor boxes3d, at::Tensor pts_featur
     int sampled_pts_num = pooled_features.size(2);
 
 
-    const float * xyz_data = xyz.data<float>();
-    const float * boxes3d_data = boxes3d.data<float>();
-    const float * pts_feature_data = pts_feature.data<float>();
-    float * pooled_features_data = pooled_features.data<float>();
-    int * pooled_empty_flag_data = pooled_empty_flag.data<int>();
+    const float * xyz_data = xyz.data_ptr<float>();
+    const float * boxes3d_data = boxes3d.data_ptr<float>();
+    const float * pts_feature_data = pts_feature.data_ptr<float>();
+    float * pooled_features_data = pooled_features.data_ptr<float>();
+    int * pooled_empty_flag_data = pooled_empty_flag.data_ptr<int>();
 
     roipool3dLauncher_slow(batch_size, pts_num, boxes_num, feature_in_len, sampled_pts_num, 
                            xyz_data, boxes3d_data, pts_feature_data, pooled_features_data, pooled_empty_flag_data);
@@ -64,11 +64,11 @@ int roipool3d_gpu(at::Tensor xyz, at::Tensor boxes3d, at::Tensor pts_feature, at
     int sampled_pts_num = pooled_features.size(2);
 
 
-    const float * xyz_data = xyz.data<float>();
-    const float * boxes3d_data = boxes3d.data<float>();
-    const float * pts_feature_data = pts_feature.data<float>();
-    float * pooled_features_data = pooled_features.data<float>();
-    int * pooled_empty_flag_data = pooled_empty_flag.data<int>();
+    const float * xyz_data = xyz.data_ptr<float>();
+    const float * boxes3d_data = boxes3d.data_ptr<float>();
+    const float * pts_feature_data = pts_feature.data_ptr<float>();
+    float * pooled_features_data = pooled_features.data_ptr<float>();
+    int * pooled_empty_flag_data = pooled_empty_flag.data_ptr<int>();
 
     roipool3dLauncher(batch_size, pts_num, boxes_num, feature_in_len, sampled_pts_num, 
                        xyz_data, boxes3d_data, pts_feature_data, pooled_features_data, pooled_empty_flag_data);
@@ -106,9 +106,9 @@ int pts_in_boxes3d_cpu(at::Tensor pts_flag, at::Tensor pts, at::Tensor boxes3d){
     long boxes_num = boxes3d.size(0);
     long pts_num = pts.size(0);
 
-    long * pts_flag_flat = pts_flag.data<long>();
-    float * pts_flat = pts.data<float>();
-    float * boxes3d_flat = boxes3d.data<float>();
+    long * pts_flag_flat = pts_flag.data_ptr<long>();
+    float * pts_flat = pts.data_ptr<float>();
+    float * boxes3d_flat = boxes3d.data_ptr<float>();
 
     memset(pts_flag_flat, 0, boxes_num * pts_num * sizeof(long));
 
@@ -143,12 +143,12 @@ int roipool3d_cpu(at::Tensor pts, at::Tensor boxes3d, at::Tensor pts_feature, at
     long feature_len = pts_feature.size(1);
     long sampled_pts_num = pooled_pts.size(1);
 
-    float * pts_flat = pts.data<float>();
-    float * boxes3d_flat = boxes3d.data<float>();
-    float * pts_feature_flat = pts_feature.data<float>();
-    float * pooled_pts_flat = pooled_pts.data<float>();
-    float * pooled_features_flat = pooled_features.data<float>();
-    long * pooled_empty_flag_flat = pooled_empty_flag.data<long>();
+    float * pts_flat = pts.data_ptr<float>();
+    float * boxes3d_flat = boxes3d.data_ptr<float>();
+    float * pts_feature_flat = pts_feature.data_ptr<float>();
+    float * pooled_pts_flat = pooled_pts.data_ptr<float>();
+    float * pooled_features_flat = pooled_features.data_ptr<float>();
+    long * pooled_empty_flag_flat = pooled_empty_flag.data_ptr<long>();
 
     memset(pooled_empty_flag_flat, 0, boxes_num * sizeof(long));
 
