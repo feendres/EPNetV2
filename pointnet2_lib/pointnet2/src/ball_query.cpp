@@ -8,7 +8,7 @@
 extern THCState *state;
 
 #define CHECK_CUDA(x) TORCH_CHECK(x.is_cuda(), #x, " must be a CUDAtensor ")
-#define CHECK_CONTIGUOUS(x) AT_CHECK(x.is_contiguous(), #x, " must be contiguous ")
+#define CHECK_CONTIGUOUS(x) TORCH_CHECK(x.is_contiguous(), #x, " must be contiguous ")
 #define CHECK_INPUT(x) CHECK_CUDA(x);CHECK_CONTIGUOUS(x)
 
 int ball_query_wrapper_fast(int b, int n, int m, float radius, int nsample, 
