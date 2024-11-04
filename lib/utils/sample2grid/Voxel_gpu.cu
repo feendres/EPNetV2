@@ -11,10 +11,10 @@ namespace{
 
 template <typename scalar_t>
 __global__ void voxel_2d_kernel(
-          const torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> input ,
-          const torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> grid ,
-           torch::PackedTensorAccessor<scalar_t,4,torch::RestrictPtrTraits,size_t> output ,
-           torch::PackedTensorAccessor<int,3,torch::RestrictPtrTraits,size_t> output_count)
+          const at::PackedTensorAccessor64<scalar_t,3,at::RestrictPtrTraits> input,
+          const at::PackedTensorAccessor64<scalar_t,3,at::RestrictPtrTraits> grid,
+           at::PackedTensorAccessor64<scalar_t,4,at::RestrictPtrTraits> output,
+           at::PackedTensorAccessor64<int,3,at::RestrictPtrTraits> output_count)
 {
     // input (N,C,H)
     // grid (N,H,Coor)
@@ -58,8 +58,8 @@ __global__ void voxel_2d_kernel(
 
 template <typename scalar_t>
 __global__ void voxel_2d_normal_kernel(
-           torch::PackedTensorAccessor<scalar_t,4,torch::RestrictPtrTraits,size_t> output ,
-           const torch::PackedTensorAccessor<int,3,torch::RestrictPtrTraits,size_t> output_count)
+           at::PackedTensorAccessor64<scalar_t,4,at::RestrictPtrTraits> output,
+           const at::PackedTensorAccessor64<int,3,at::RestrictPtrTraits> output_count)
 {
     // output (N,C, H, W)
     // output_count (N,H,W)
@@ -88,11 +88,10 @@ __global__ void voxel_2d_normal_kernel(
 
 template <typename scalar_t>
 __global__ void voxel_2d_backward_kernel(
-  const torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> grid,
-  const torch::PackedTensorAccessor<int,3,torch::RestrictPtrTraits,size_t> output_count,
-  const torch::PackedTensorAccessor<scalar_t,4,torch::RestrictPtrTraits,size_t> grad_output,
-  torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> grad_input
-)
+  const at::PackedTensorAccessor64<scalar_t,3,at::RestrictPtrTraits> grid,
+  const at::PackedTensorAccessor64<int,3,at::RestrictPtrTraits> output_count,
+  const at::PackedTensorAccessor64<scalar_t,4,at::RestrictPtrTraits> grad_output,
+  at::PackedTensorAccessor64<scalar_t,3,at::RestrictPtrTraits> grad_input)
 {
 
     // grid (N,H,Coor)
@@ -155,10 +154,10 @@ grid_voxel_2d_cuda_forward(const torch::Tensor& input, const torch::Tensor& grid
 //    AT_DISPATCH_FLOATING_TYPES(input.scalar_type(), "grid_voxel_2d_cuda", ([&] {
       voxel_2d_kernel<float>
         <<<blocks,threads>>>(
-          input.packed_accessor<float,3,torch::RestrictPtrTraits,size_t>(),
-          grid.packed_accessor<float,3,torch::RestrictPtrTraits,size_t>(),
-          output.packed_accessor<float,4,torch::RestrictPtrTraits,size_t>(),
-          output_count.packed_accessor<int,3,torch::RestrictPtrTraits,size_t>());
+          input.packed_accessor64<float,3,torch::RestrictPtrTraits>(),
+          grid.packed_accessor64<float,3,torch::RestrictPtrTraits>(),
+          output.packed_accessor64<float,4,torch::RestrictPtrTraits>(),
+          output_count.packed_accessor64<int,3,torch::RestrictPtrTraits>());
 //    }));
          const auto out_H=output.size(2);
          const auto out_W=output.size(3);
@@ -166,8 +165,8 @@ grid_voxel_2d_cuda_forward(const torch::Tensor& input, const torch::Tensor& grid
 
        voxel_2d_normal_kernel<float>
        <<<blocks2,threads>>>(
-          output.packed_accessor<float,4,torch::RestrictPtrTraits,size_t>(),
-          output_count.packed_accessor<int,3,torch::RestrictPtrTraits,size_t>()
+          output.packed_accessor64<float,4,torch::RestrictPtrTraits>(),
+          output_count.packed_accessor64<int,3,torch::RestrictPtrTraits>()
        );
 
   return std::make_tuple(output,output_count);
@@ -186,10 +185,10 @@ torch::Tensor grid_voxel_2d_cuda_backward(const torch::Tensor& grid, const torch
 //    AT_DISPATCH_FLOATING_TYPES(output_count.scalar_type(), "grid_voxel_2d_backward_cuda", ([&] {
       voxel_2d_backward_kernel<float>
         <<<blocks,threads>>>(
-          grid.packed_accessor<float,3,torch::RestrictPtrTraits,size_t>(),
-          output_count.packed_accessor<int,3,torch::RestrictPtrTraits,size_t>(),
-          grad_output.packed_accessor<float,4,torch::RestrictPtrTraits,size_t>(),
-          grad_input.packed_accessor<float,3,torch::RestrictPtrTraits,size_t>()
+          grid.packed_accessor64<float,3,torch::RestrictPtrTraits>(),
+          output_count.packed_accessor64<int,3,torch::RestrictPtrTraits>(),
+          grad_output.packed_accessor64<float,4,torch::RestrictPtrTraits>(),
+          grad_input.packed_accessor64<float,3,torch::RestrictPtrTraits>()
           );
 
 //    }
